@@ -1,0 +1,296 @@
+import 'package:flutter/material.dart';
+import '../models/cruise.dart';
+import '../services/cruise_service.dart';
+import 'activity_detail_screen.dart';
+
+class ScheduleScreen extends StatefulWidget {
+  const ScheduleScreen({super.key});
+
+  @override
+  State<ScheduleScreen> createState() => _ScheduleScreenState();
+}
+
+class _ScheduleScreenState extends State<ScheduleScreen>
+    with SingleTickerProviderStateMixin {
+  late Cruise _cruise;
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _cruise = CruiseService().getMockCruise();
+    _tabController = TabController(
+      length: _cruise.days.length,
+      vsync: this,
+    );
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Volga Dream'),
+            Text(
+              'Теплоход «${_cruise.shipName}»',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Colors.white70,
+                  ),
+            ),
+          ],
+        ),
+        backgroundColor: const Color(0xFF0D4F6E),
+        foregroundColor: Colors.white,
+        bottom: TabBar(
+          controller: _tabController,
+          isScrollable: true,
+          indicatorColor: Colors.white,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white60,
+          tabs: _cruise.days.map((day) {
+            return Tab(text: 'День ${day.dayIndex}');
+          }).toList(),
+        ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: _cruise.days.map((day) {
+          return _DayTimeline(
+            day: day,
+            onActivityTap: (activity) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ActivityDetailScreen(
+                    activity: activity,
+                    day: day,
+                  ),
+                ),
+              );
+            },
+          );
+        }).toList(),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 0,
+        selectedItemColor: const Color(0xFF0D4F6E),
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.schedule),
+            label: 'Расписание',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.notifications_outlined),
+            label: 'Уведомления',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.info_outline),
+            label: 'О круизе',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DayTimeline extends StatelessWidget {
+  final DayItinerary day;
+  final void Function(Activity) onActivityTap;
+
+  const _DayTimeline({
+    required this.day,
+    required this.onActivityTap,
+  });
+
+  Color _colorForType(ActivityType type) {
+    switch (type) {
+      case ActivityType.lecture:
+        return const Color(0xFF3B82F6);
+      case ActivityType.excursion:
+        return const Color(0xFF10B981);
+      case ActivityType.meal:
+        return const Color(0xFFF59E0B);
+    }
+  }
+
+  String _labelForType(ActivityType type) {
+    switch (type) {
+      case ActivityType.lecture:
+        return 'Лекция';
+      case ActivityType.excursion:
+        return 'Экскурсия';
+      case ActivityType.meal:
+        return 'Приём пищи';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          child: Row(
+            children: [
+              Text(
+                '${day.dayIndex} ',
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF0D4F6E),
+                ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    day.dateLabel,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  if (day.locationName != null)
+                    Row(
+                      children: [
+                        Icon(Icons.location_on,
+                            size: 14, color: Colors.grey[500]),
+                        const SizedBox(width: 4),
+                        Text(
+                          day.locationName!,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: day.activities.length,
+            itemBuilder: (context, index) {
+              final activity = day.activities[index];
+              final color = _colorForType(activity.type);
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: InkWell(
+                  onTap: () => onActivityTap(activity),
+                  borderRadius: BorderRadius.circular(16),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        width: 56,
+                        child: Text(
+                          activity.timeRange.split(' – ').first,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey[700],
+                          ),
+                        ),
+                      ),
+                      Column(
+                        children: [
+                          Container(
+                            width: 14,
+                            height: 14,
+                            margin: const EdgeInsets.only(top: 2),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(color: color, width: 2),
+                              color: Colors.white,
+                            ),
+                          ),
+                          if (index < day.activities.length - 1)
+                            Container(
+                              width: 2,
+                              height: 40,
+                              color: Colors.grey[200],
+                            ),
+                        ],
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[50],
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                activity.title,
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF0D2135),
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: color.withAlpha(30),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Text(
+                                      _labelForType(activity.type),
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w500,
+                                        color: color,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Icon(Icons.location_on,
+                                      size: 14, color: Colors.grey[400]),
+                                  const SizedBox(width: 2),
+                                  Expanded(
+                                    child: Text(
+                                      activity.location,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey[500],
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
