@@ -29,7 +29,7 @@ lib/
 flutter pub get                          # установить зависимости (нет сторонних пакетов, только Flutter SDK + flutter_lints)
 flutter analyze                          # статический анализ (линтер + типы)
 flutter test                             # все тесты
-flutter test test/widget_test.dart       # конкретный тест
+flutter test test/widget_test.dart       # конкретный тестT
 flutter run                              # запуск на устройстве/эмуляторе
 flutter build apk                        # сборка APK
 ```
