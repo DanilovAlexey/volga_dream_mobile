@@ -4,6 +4,8 @@ import '../models/cruise.dart';
 class CruiseApiService {
   final http.Client _client;
   final Uri _baseUrl;
+  final String mockUrl = "/mock/cruise"; 
+  final String url = "/cruise"; 
 
   CruiseApiService({
     http.Client? client,
@@ -13,7 +15,7 @@ class CruiseApiService {
 
   Future<Cruise> fetchCruise() async {
     final response = await _client.get(
-      _baseUrl.resolve('/mock/cruize'),
+      _baseUrl.resolve(url),
       headers: {'Accept': 'application/json'},
     );
 
