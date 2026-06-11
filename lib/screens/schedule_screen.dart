@@ -4,7 +4,9 @@ import '../services/cruise_api_service.dart';
 import 'activity_detail_screen.dart';
 
 class ScheduleScreen extends StatefulWidget {
-  const ScheduleScreen({super.key});
+  final String tourName;
+
+  const ScheduleScreen({super.key, required this.tourName});
 
   @override
   State<ScheduleScreen> createState() => _ScheduleScreenState();
@@ -40,7 +42,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
           children: [
             Text('Volga Dream'),
             Text(
-              'Загрузка...',
+              widget.tourName,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Colors.white70,
                   ),

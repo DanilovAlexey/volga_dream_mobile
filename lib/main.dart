@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/schedule_screen.dart';
+import 'screens/next_tour_screen.dart';
 
 void main() {
   runApp(const VolgaDreamApp());
@@ -19,7 +19,7 @@ class VolgaDreamApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const ScheduleScreen(),
+      home: const NextTourScreen(),
     );
   }
 }
