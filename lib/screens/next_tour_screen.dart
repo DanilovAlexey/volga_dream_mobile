@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/tour.dart';
-import '../services/tour_service.dart';
+import '../services/tour_api_service.dart';
 import 'schedule_screen.dart';
 
 class NextTourScreen extends StatefulWidget {
@@ -11,8 +11,8 @@ class NextTourScreen extends StatefulWidget {
 }
 
 class _NextTourScreenState extends State<NextTourScreen> {
-  final TourService _tourService = TourService();
-  late Future<TourInfo> _tourFuture;
+  final TourApiService _tourService = TourApiService();
+  late Future<TourInfo?> _tourFuture;
 
   @override
   void initState() {
@@ -30,7 +30,7 @@ class _NextTourScreenState extends State<NextTourScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      body: FutureBuilder<TourInfo>(
+      body: FutureBuilder<TourInfo?>(
         future: _tourFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -55,6 +55,7 @@ class _NextTourScreenState extends State<NextTourScreen> {
                         setState(() {
                           _tourFuture =
                               _tourService.fetchNearestTour(DateTime.now());
+                          _tourService.dispose();
                         });
                       },
                       icon: const Icon(Icons.refresh),
@@ -65,7 +66,26 @@ class _NextTourScreenState extends State<NextTourScreen> {
               ),
             );
           }
-          final tour = snapshot.data!;
+          final tour = snapshot.data;
+          if (tour == null) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.info_outline,
+                        size: 64, color: Colors.grey[400]),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Следующий круиз пока не запланирован',
+                      style: theme.textTheme.titleMedium,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
           final days = tour.daysUntilStart;
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -124,16 +144,17 @@ class _NextTourScreenState extends State<NextTourScreen> {
                   ),
                 ),
                 const SizedBox(height: 48),
-                FilledButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) =>
-                            ScheduleScreen(tourName: tour.name),
-                      ),
-                    );
-                  },
+                  FilledButton.icon(
+                    onPressed: () {
+                      _tourService.dispose();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              ScheduleScreen(tourName: tour.name),
+                        ),
+                      );
+                    },
                   icon: const Icon(Icons.calendar_month),
                   label: const Text('Подробнее'),
                   style: FilledButton.styleFrom(
