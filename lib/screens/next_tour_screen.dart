@@ -20,6 +20,14 @@ class _NextTourScreenState extends State<NextTourScreen> {
     _tourFuture = _tourService.fetchNearestTour(DateTime.now());
   }
 
+  Widget _fallbackIcon(ThemeData theme) {
+    return Icon(
+      Icons.directions_boat,
+      size: 80,
+      color: theme.colorScheme.primary,
+    );
+  }
+
   String _daysMessage(TourInfo tour) {
     final now = DateTime.now();
     if (now.isBefore(tour.startDate)) {
@@ -96,10 +104,22 @@ class _NextTourScreenState extends State<NextTourScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.directions_boat,
-                  size: 80,
-                  color: theme.colorScheme.primary,
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: tour.imageUrl != null
+                      ? Image.network(
+                          tour.imageUrl!,
+                          height: 180,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) => _fallbackIcon(theme),
+                          loadingBuilder: (_, child, progress) =>
+                              progress == null
+                                  ? child
+                                  : const Center(
+                                      child: CircularProgressIndicator()),
+                        )
+                      : _fallbackIcon(theme),
                 ),
                 const SizedBox(height: 32),
                 Text(
