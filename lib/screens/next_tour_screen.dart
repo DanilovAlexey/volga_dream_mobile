@@ -20,9 +20,14 @@ class _NextTourScreenState extends State<NextTourScreen> {
     _tourFuture = _tourService.fetchNearestTour(DateTime.now());
   }
 
-  String _daysMessage(int days) {
-    if (days > 0) return 'До начала тура осталось $days дн.';
-    if (days == 0) return 'Тур начинается сегодня!';
+  String _daysMessage(TourInfo tour) {
+    final now = DateTime.now();
+    if (now.isBefore(tour.startDate)) {
+      final days = tour.daysUntilStart;
+      if (days == 0) return 'Тур начинается сегодня!';
+      return 'До начала тура осталось $days дн.';
+    }
+    if (now.isAfter(tour.endDate)) return 'Тур завершён';
     return 'Тур уже идёт';
   }
 
@@ -86,7 +91,6 @@ class _NextTourScreenState extends State<NextTourScreen> {
               ),
             );
           }
-          final days = tour.daysUntilStart;
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32),
             child: Column(
@@ -136,7 +140,7 @@ class _NextTourScreenState extends State<NextTourScreen> {
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Text(
-                    _daysMessage(days),
+                    _daysMessage(tour),
                     style: theme.textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.w700,
                       color: theme.colorScheme.primary,

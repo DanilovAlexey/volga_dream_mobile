@@ -20,18 +20,18 @@ class TourInfo {
   bool get hasEnded => DateTime.now().isAfter(endDate);
 
   factory TourInfo.fromJson(Map<String, dynamic> json) => TourInfo(
-        id: json['id'] as String,
+        id: json['scheduleId'] as String,
         name: json['name'] as String,
         shipName: json['shipName'] as String,
-        startDate: DateTime.parse(json['startDate'] as String),
-        endDate: DateTime.parse(json['endDate'] as String),
+        startDate: DateTime.parse(json['dateBegin'] as String),
+        endDate: DateTime.parse(json['dateEnd'] as String),
       );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
+        'scheduleId': id,
         'name': name,
         'shipName': shipName,
-        'startDate': startDate.toIso8601String(),
-        'endDate': endDate.toIso8601String(),
+        'dateBegin': startDate.toIso8601String(),
+        'dateEnd': endDate.toIso8601String(),
       };
 }
