@@ -80,7 +80,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
                   FilledButton.icon(
                     onPressed: () {
                       setState(() {
-                        _cruiseFuture = _apiService.fetchCruise(scheduleId: widget.tourId);
+                        _cruiseFuture = _apiService.fetchCruise(scheduleId: widget.scheduleId);
                       });
                     },
                     icon: const Icon(Icons.refresh),
