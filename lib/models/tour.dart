@@ -1,5 +1,5 @@
 class TourInfo {
-  final String id;
+  final String scheduleId;
   final String name;
   final String shipName;
   final DateTime startDate;
@@ -7,7 +7,7 @@ class TourInfo {
   final String? imageUrl;
 
   const TourInfo({
-    required this.id,
+    required this.scheduleId,
     required this.name,
     required this.shipName,
     required this.startDate,
@@ -22,7 +22,7 @@ class TourInfo {
   bool get hasEnded => DateTime.now().isAfter(endDate);
 
       factory TourInfo.fromJson(Map<String, dynamic> json) => TourInfo(
-        id: json['scheduleId'] as String,
+        scheduleId: json['scheduleId'] as String,
         name: json['name'] as String,
         shipName: json['shipName'] as String,
         startDate: DateTime.parse(json['dateBegin'] as String),
@@ -31,7 +31,7 @@ class TourInfo {
       );
 
   Map<String, dynamic> toJson() => {
-        'scheduleId': id,
+        'scheduleId': scheduleId,
         'name': name,
         'shipName': shipName,
         'dateBegin': startDate.toIso8601String(),

@@ -13,9 +13,12 @@ class CruiseApiService {
   })  : _client = client ?? http.Client(),
         _baseUrl = baseUrl ?? Uri.parse('http://localhost:8080');
 
-  Future<Cruise> fetchCruise() async {
+  Future<Cruise> fetchCruise({required String scheduleId}) async {
+    final uri = _baseUrl.resolve(url).replace(queryParameters: {
+      'scheduleId': scheduleId,
+    });
     final response = await _client.get(
-      _baseUrl.resolve(url),
+      uri,
       headers: {'Accept': 'application/json'},
     );
 

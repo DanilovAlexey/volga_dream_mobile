@@ -175,7 +175,7 @@ class _NextTourScreenState extends State<NextTourScreen> {
                         context,
                         MaterialPageRoute(
                           builder: (_) =>
-                              ScheduleScreen(tourName: tour.name),
+                              ScheduleScreen(tourName: tour.name, tourId: tour.scheduleId),
                         ),
                       );
                     },

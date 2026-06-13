@@ -5,8 +5,9 @@ import 'activity_detail_screen.dart';
 
 class ScheduleScreen extends StatefulWidget {
   final String tourName;
+  final String scheduleId;
 
-  const ScheduleScreen({super.key, required this.tourName});
+  const ScheduleScreen({super.key, required this.tourName, required this.scheduleId});
 
   @override
   State<ScheduleScreen> createState() => _ScheduleScreenState();
@@ -22,7 +23,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
   @override
   void initState() {
     super.initState();
-    _cruiseFuture = _apiService.fetchCruise();
+    _cruiseFuture = _apiService.fetchCruise(scheduleId: widget.scheduleId);
     _tabController = TabController(length: 0, vsync: this);
   }
 
@@ -79,7 +80,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
                   FilledButton.icon(
                     onPressed: () {
                       setState(() {
-                        _cruiseFuture = _apiService.fetchCruise();
+                        _cruiseFuture = _apiService.fetchCruise(scheduleId: widget.tourId);
                       });
                     },
                     icon: const Icon(Icons.refresh),
