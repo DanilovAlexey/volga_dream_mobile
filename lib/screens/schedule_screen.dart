@@ -1,33 +1,36 @@
 import 'package:flutter/material.dart';
 import '../models/cruise.dart';
-import '../services/cruise_service.dart';
+import '../services/cruise_api_service.dart';
 import 'activity_detail_screen.dart';
 
 class ScheduleScreen extends StatefulWidget {
-  const ScheduleScreen({super.key});
+  final String tourName;
+  final String scheduleId;
+
+  const ScheduleScreen({super.key, required this.tourName, required this.scheduleId});
 
   @override
   State<ScheduleScreen> createState() => _ScheduleScreenState();
 }
 
 class _ScheduleScreenState extends State<ScheduleScreen>
-    with SingleTickerProviderStateMixin {
-  late Cruise _cruise;
+    with TickerProviderStateMixin {
+  final CruiseApiService _apiService = CruiseApiService();
+
+  late Future<Cruise> _cruiseFuture;
   late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
-    _cruise = CruiseService().getMockCruise();
-    _tabController = TabController(
-      length: _cruise.days.length,
-      vsync: this,
-    );
+    _cruiseFuture = _apiService.fetchCruise(scheduleId: widget.scheduleId);
+    _tabController = TabController(length: 0, vsync: this);
   }
 
   @override
   void dispose() {
     _tabController.dispose();
+    _apiService.dispose();
     super.dispose();
   }
 
@@ -40,7 +43,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
           children: [
             Text('Volga Dream'),
             Text(
-              'Теплоход «${_cruise.shipName}»',
+              widget.tourName,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Colors.white70,
                   ),
@@ -49,35 +52,89 @@ class _ScheduleScreenState extends State<ScheduleScreen>
         ),
         backgroundColor: const Color(0xFF0D4F6E),
         foregroundColor: Colors.white,
-        bottom: TabBar(
-          controller: _tabController,
-          isScrollable: true,
-          indicatorColor: Colors.white,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white60,
-          tabs: _cruise.days.map((day) {
-            return Tab(text: 'День ${day.dayIndex}');
-          }).toList(),
-        ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: _cruise.days.map((day) {
-          return _DayTimeline(
-            day: day,
-            onActivityTap: (activity) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => ActivityDetailScreen(
-                    activity: activity,
-                    day: day,
+      body: FutureBuilder<Cruise>(
+        future: _cruiseFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.cloud_off, size: 64, color: Colors.grey[400]),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Не удалось загрузить данные',
+                    style: Theme.of(context).textTheme.titleMedium,
                   ),
-                ),
-              );
-            },
+                  const SizedBox(height: 8),
+                  Text(
+                    snapshot.error.toString(),
+                    style: Theme.of(context).textTheme.bodySmall,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  FilledButton.icon(
+                    onPressed: () {
+                      setState(() {
+                        _cruiseFuture = _apiService.fetchCruise(scheduleId: widget.scheduleId);
+                      });
+                    },
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Повторить'),
+                  ),
+                ],
+              ),
+            );
+          }
+          final cruise = snapshot.data!;
+          _tabController.dispose();
+          _tabController = TabController(
+            length: cruise.days.length,
+            vsync: this,
           );
-        }).toList(),
+          return Column(
+            children: [
+              Material(
+                color: const Color(0xFF0D4F6E),
+                child: TabBar(
+                  controller: _tabController,
+                  isScrollable: true,
+                  indicatorColor: Colors.white,
+                  labelColor: Colors.white,
+                  unselectedLabelColor: Colors.white60,
+                  tabs: cruise.days.map((day) {
+                    return Tab(text: 'День ${day.dayIndex}');
+                  }).toList(),
+                ),
+              ),
+              Expanded(
+                child: TabBarView(
+                  controller: _tabController,
+                  children: cruise.days.map((day) {
+                    return _DayTimeline(
+                      day: day,
+                      onActivityTap: (activity) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ActivityDetailScreen(
+                              activity: activity,
+                              day: day,
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
+          );
+        },
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 0,
