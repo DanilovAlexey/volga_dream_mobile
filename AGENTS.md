@@ -39,6 +39,18 @@ lib/
 **Нет state management** (setState), **нет роутинга** (Navigator.push).
 Новые экраны, сервисы и модели добавлять в соответствующие директории.
 
+## CORS (Chrome)
+
+При локальном запуске в Chrome `Image.network()` может выдавать CORS-ошибку из-за ограничений браузера. Чтобы избежать этого, используй в мок-данных `imageUrl` с реального сервера, который отдаёт корректные заголовки:
+```
+https://volgadream.ru/wp-content/uploads/2024/10/znakomstvo-s-volgoj-gl-2026-scaled.webp
+```
+
+Альтернатива — запускать Chrome без CORS:
+```powershell
+flutter run -d chrome --web-browser-flag "--disable-web-security"
+```
+
 ## Команды (PowerShell)
 
 ```powershell
