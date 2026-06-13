@@ -1,6 +1,10 @@
 import '../models/cruise.dart';
 
 class CruiseService {
+  Future<Cruise> fetchCruise({required String scheduleId}) async {
+    return getMockCruise();
+  }
+
   Cruise getMockCruise() {
     return Cruise(
       name: 'Волжское путешествие',
@@ -243,4 +247,6 @@ class CruiseService {
       ],
     );
   }
+
+  void dispose() {}
 }

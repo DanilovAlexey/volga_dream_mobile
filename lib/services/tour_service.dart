@@ -9,16 +9,19 @@ class TourService {
   Future<TourInfo> fetchTourInfo(String tourId) async {
     await Future.delayed(const Duration(milliseconds: 500));
     return TourInfo(
-      id: tourId,
+      scheduleId: "00000002-0000-0000-0000-000000000001",
       name: 'Волжское путешествие',
       shipName: 'Александр Невский',
       startDate: DateTime(2026, 7, 1),
       endDate: DateTime(2026, 7, 5),
+      imageUrl: "https://volgadream.ru/wp-content/uploads/2024/10/znakomstvo-s-volgoj-gl-2026-scaled.webp"
     );
   }
 
-  Future<TourInfo> fetchNearestTour(DateTime date) async {
+  Future<TourInfo?> fetchNearestTour(DateTime date) async {
     final tourId = await fetchNearestTourId(date);
     return fetchTourInfo(tourId);
   }
+
+  void dispose() {}
 }
