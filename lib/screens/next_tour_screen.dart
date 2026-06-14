@@ -1,42 +1,95 @@
 import 'package:flutter/material.dart';
 import '../models/tour.dart';
-import '../services/tour_api_service.dart';
+import '../services/service_interfaces.dart';
 import 'schedule_screen.dart';
 
 class NextTourScreen extends StatefulWidget {
-  const NextTourScreen({super.key});
+  final ITourService tourService;
+  final ICruiseService cruiseService;
+
+  const NextTourScreen({
+    super.key,
+    required this.tourService,
+    required this.cruiseService,
+  });
 
   @override
   State<NextTourScreen> createState() => _NextTourScreenState();
 }
 
 class _NextTourScreenState extends State<NextTourScreen> {
-  final TourApiService _tourService = TourApiService();
   late Future<TourInfo?> _tourFuture;
 
   @override
   void initState() {
     super.initState();
-    _tourFuture = _tourService.fetchNearestTour(DateTime.now());
+    _tourFuture = widget.tourService.fetchNearestTour(DateTime.now());
   }
 
-  Widget _fallbackIcon(ThemeData theme) {
-    return Icon(
-      Icons.directions_boat,
-      size: 80,
-      color: theme.colorScheme.primary,
+  void _retry() {
+    setState(() {
+      _tourFuture = widget.tourService.fetchNearestTour(DateTime.now());
+    });
+  }
+
+  void _openSchedule(TourInfo tour) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ScheduleScreen(
+          tourName: tour.name,
+          scheduleId: tour.scheduleId,
+          cruiseService: widget.cruiseService,
+        ),
+      ),
     );
   }
 
-  String _daysMessage(TourInfo tour) {
+  static const _months = [
+    '', 'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+    'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря',
+  ];
+
+  String _formatDate(DateTime d) => '${d.day} ${_months[d.month]}';
+
+  String _formatDateRange(DateTime start, DateTime end) {
+    if (start.month == end.month && start.year == end.year) {
+      return '${start.day} — ${end.day} ${_months[start.month]} ${start.year}';
+    }
+    return '${_formatDate(start)} ${start.year} — ${_formatDate(end)} ${end.year}';
+  }
+
+  Widget _daysBadge(TourInfo tour) {
     final now = DateTime.now();
+    String text;
+    Color color;
     if (now.isBefore(tour.startDate)) {
       final days = tour.daysUntilStart;
-      if (days == 0) return 'Тур начинается сегодня!';
-      return 'До начала тура осталось $days дн.';
+      text = days == 0 ? 'Тур начинается сегодня!' : 'До начала: $days дн.';
+      color = Colors.amber;
+    } else if (now.isAfter(tour.endDate)) {
+      text = 'Тур завершён';
+      color = Colors.grey;
+    } else {
+      text = 'Тур уже идёт';
+      color = Colors.green;
     }
-    if (now.isAfter(tour.endDate)) return 'Тур завершён';
-    return 'Тур уже идёт';
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      decoration: BoxDecoration(
+        color: color.withAlpha(30),
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: color.withAlpha(100)),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: color,
+          fontWeight: FontWeight.w700,
+          fontSize: 14,
+        ),
+      ),
+    );
   }
 
   @override
@@ -64,13 +117,7 @@ class _NextTourScreenState extends State<NextTourScreen> {
                     ),
                     const SizedBox(height: 24),
                     FilledButton.icon(
-                      onPressed: () {
-                        setState(() {
-                          _tourFuture =
-                              _tourService.fetchNearestTour(DateTime.now());
-                          _tourService.dispose();
-                        });
-                      },
+                      onPressed: _retry,
                       icon: const Icon(Icons.refresh),
                       label: const Text('Повторить'),
                     ),
@@ -99,98 +146,138 @@ class _NextTourScreenState extends State<NextTourScreen> {
               ),
             );
           }
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: tour.imageUrl != null
-                      ? Image.network(
-                          tour.imageUrl!,
-                          height: 180,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, _, _) => _fallbackIcon(theme),
-                          loadingBuilder: (_, child, progress) =>
-                              progress == null
-                                  ? child
-                                  : const Center(
-                                      child: CircularProgressIndicator()),
-                        )
-                      : _fallbackIcon(theme),
-                ),
-                const SizedBox(height: 32),
-                Text(
-                  'Volga Dream',
-                  style: theme.textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: theme.colorScheme.primary,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Следующий тур',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    color: Colors.grey[600],
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  tour.name,
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  tour.shipName,
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: Colors.grey[500],
-                  ),
-                ),
-                const SizedBox(height: 32),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 24, vertical: 16),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withAlpha(15),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Text(
-                    _daysMessage(tour),
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: theme.colorScheme.primary,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 48),
-                  FilledButton.icon(
-                    onPressed: () {
-                      _tourService.dispose();
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) =>
-                              ScheduleScreen(tourName: tour.name, scheduleId: tour.scheduleId),
-                        ),
-                      );
-                    },
-                  icon: const Icon(Icons.calendar_month),
-                  label: const Text('Подробнее'),
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 32, vertical: 16),
-                    textStyle: theme.textTheme.titleMedium,
-                  ),
-                ),
-              ],
-            ),
-          );
+          return _buildHeroLayout(tour, theme);
         },
+      ),
+    );
+  }
+
+  Widget _buildHeroLayout(TourInfo tour, ThemeData theme) {
+    return Column(
+      children: [
+        Expanded(
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(32),
+                  bottomRight: Radius.circular(32),
+                ),
+                child: tour.imageUrl != null
+                    ? Image.network(
+                        tour.imageUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => _buildFallback(theme),
+                        loadingBuilder: (_, child, progress) =>
+                            progress == null
+                                ? child
+                                : const Center(
+                                    child: CircularProgressIndicator()),
+                      )
+                    : _buildFallback(theme),
+              ),
+              Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Color(0xB3000000),
+                    ],
+                  ),
+                ),
+              ),
+              SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 16),
+                      Text(
+                        'Volga Dream',
+                        style: TextStyle(
+                          color: Colors.white.withAlpha(200),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 2,
+                        ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        tour.name,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 30,
+                          fontWeight: FontWeight.w800,
+                          height: 1.1,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Icon(Icons.directions_boat,
+                              size: 18, color: Colors.white.withAlpha(180)),
+                          const SizedBox(width: 6),
+                          Text(
+                            tour.shipName,
+                            style: TextStyle(
+                              color: Colors.white.withAlpha(200),
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _formatDateRange(tour.startDate, tour.endDate),
+                        style: TextStyle(
+                          color: Colors.white.withAlpha(160),
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      _daysBadge(tour),
+                      const SizedBox(height: 32),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+            child: SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: () => _openSchedule(tour),
+                icon: const Icon(Icons.calendar_month),
+                label: const Text('Подробнее'),
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  textStyle: theme.textTheme.titleMedium,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFallback(ThemeData theme) {
+    return Container(
+      color: theme.colorScheme.primaryContainer,
+      child: Center(
+        child: Icon(
+          Icons.directions_boat,
+          size: 80,
+          color: theme.colorScheme.primary,
+        ),
       ),
     );
   }

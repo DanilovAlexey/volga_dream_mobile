@@ -2,8 +2,9 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/tour.dart';
 import 'cruise_api_service.dart';
+import 'service_interfaces.dart';
 
-class TourApiService {
+class TourApiService implements ITourService {
   final http.Client _client;
   final Uri _baseUrl;
   final String _path = '/cruise/nearest';
@@ -14,6 +15,7 @@ class TourApiService {
   })  : _client = client ?? http.Client(),
         _baseUrl = baseUrl ?? Uri.parse('http://localhost:8080');
 
+  @override
   Future<TourInfo?> fetchNearestTour(DateTime date) async {
     final uri = _baseUrl.resolve(_path).replace(
           queryParameters: {'date': _formatDate(date)},
@@ -40,6 +42,7 @@ class TourApiService {
     return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
   }
 
+  @override
   void dispose() {
     _client.close();
   }

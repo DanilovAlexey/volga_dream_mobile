@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 import '../models/cruise.dart';
-import '../services/cruise_api_service.dart';
+import '../services/service_interfaces.dart';
 import 'activity_detail_screen.dart';
 
 class ScheduleScreen extends StatefulWidget {
   final String tourName;
   final String scheduleId;
+  final ICruiseService cruiseService;
 
-  const ScheduleScreen({super.key, required this.tourName, required this.scheduleId});
+  const ScheduleScreen({
+    super.key,
+    required this.tourName,
+    required this.scheduleId,
+    required this.cruiseService,
+  });
 
   @override
   State<ScheduleScreen> createState() => _ScheduleScreenState();
@@ -15,22 +21,20 @@ class ScheduleScreen extends StatefulWidget {
 
 class _ScheduleScreenState extends State<ScheduleScreen>
     with TickerProviderStateMixin {
-  final CruiseApiService _apiService = CruiseApiService();
-
   late Future<Cruise> _cruiseFuture;
   late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
-    _cruiseFuture = _apiService.fetchCruise(scheduleId: widget.scheduleId);
+    _cruiseFuture =
+        widget.cruiseService.fetchCruise(scheduleId: widget.scheduleId);
     _tabController = TabController(length: 0, vsync: this);
   }
 
   @override
   void dispose() {
     _tabController.dispose();
-    _apiService.dispose();
     super.dispose();
   }
 
@@ -80,7 +84,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
                   FilledButton.icon(
                     onPressed: () {
                       setState(() {
-                        _cruiseFuture = _apiService.fetchCruise(scheduleId: widget.scheduleId);
+                        _cruiseFuture = widget.cruiseService.fetchCruise(scheduleId: widget.scheduleId);
                       });
                     },
                     icon: const Icon(Icons.refresh),

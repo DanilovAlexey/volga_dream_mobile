@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'screens/next_tour_screen.dart';
+import 'services/service_locator.dart';
 
 void main() {
-  runApp(const VolgaDreamApp());
+  runApp(VolgaDreamApp());
 }
 
 class VolgaDreamApp extends StatelessWidget {
@@ -10,6 +11,9 @@ class VolgaDreamApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tourService = ServiceLocator.createTourService();
+    final cruiseService = ServiceLocator.createCruiseService();
+
     return MaterialApp(
       title: 'Volga Dream',
       debugShowCheckedModeBanner: false,
@@ -19,7 +23,10 @@ class VolgaDreamApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const NextTourScreen(),
+      home: NextTourScreen(
+        tourService: tourService,
+        cruiseService: cruiseService,
+      ),
     );
   }
 }

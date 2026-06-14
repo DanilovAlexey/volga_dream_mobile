@@ -1,7 +1,8 @@
 import 'package:http/http.dart' as http;
 import '../models/cruise.dart';
+import 'service_interfaces.dart';
 
-class CruiseApiService {
+class CruiseApiService implements ICruiseService {
   final http.Client _client;
   final Uri _baseUrl;
   final String mockUrl = "/mock/cruise"; 
@@ -13,6 +14,7 @@ class CruiseApiService {
   })  : _client = client ?? http.Client(),
         _baseUrl = baseUrl ?? Uri.parse('http://localhost:8080');
 
+  @override
   Future<Cruise> fetchCruise({required String scheduleId}) async {
     final uri = _baseUrl.resolve(url).replace(queryParameters: {
       'scheduleId': scheduleId,
@@ -31,6 +33,7 @@ class CruiseApiService {
     );
   }
 
+  @override
   void dispose() {
     _client.close();
   }

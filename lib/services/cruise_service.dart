@@ -1,6 +1,8 @@
 import '../models/cruise.dart';
+import 'service_interfaces.dart';
 
-class CruiseService {
+class CruiseService implements ICruiseService {
+  @override
   Future<Cruise> fetchCruise({required String scheduleId}) async {
     return getMockCruise();
   }
@@ -248,5 +250,6 @@ class CruiseService {
     );
   }
 
+  @override
   void dispose() {}
 }

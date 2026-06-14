@@ -1,6 +1,7 @@
 import '../models/tour.dart';
+import 'service_interfaces.dart';
 
-class TourService {
+class TourService implements ITourService {
   Future<String> fetchNearestTourId(DateTime date) async {
     await Future.delayed(const Duration(milliseconds: 500));
     return 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
@@ -18,10 +19,12 @@ class TourService {
     );
   }
 
+  @override
   Future<TourInfo?> fetchNearestTour(DateTime date) async {
     final tourId = await fetchNearestTourId(date);
     return fetchTourInfo(tourId);
   }
 
+  @override
   void dispose() {}
 }
