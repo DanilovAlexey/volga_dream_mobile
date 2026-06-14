@@ -35,6 +35,7 @@ class ActivityDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       body: CustomScrollView(
         slivers: [
@@ -48,8 +49,8 @@ class ActivityDetailScreen extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      const Color(0xFF0D4F6E),
-                      const Color(0xFF1A7A9A),
+                      theme.colorScheme.primary,
+                      theme.colorScheme.primary.withAlpha(160),
                     ],
                   ),
                 ),
@@ -136,7 +137,7 @@ class ActivityDetailScreen extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 16,
                       height: 1.6,
-                      color: const Color(0xFF2A3A4A),
+                      color: theme.colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -176,8 +177,8 @@ class ActivityDetailScreen extends StatelessWidget {
                       icon: const Icon(Icons.notifications_active),
                       label: const Text('Напомнить за 15 минут'),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFF0D4F6E),
-                        side: const BorderSide(color: Color(0xFF0D4F6E)),
+                        foregroundColor: theme.colorScheme.primary,
+                        side: BorderSide(color: theme.colorScheme.primary),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -208,6 +209,7 @@ class _InfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -229,7 +231,7 @@ class _InfoRow extends StatelessWidget {
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w500,
-                color: const Color(0xFF1A2A3A),
+                color: theme.colorScheme.onSurface,
               ),
             ),
           ],

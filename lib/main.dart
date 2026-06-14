@@ -19,7 +19,8 @@ class VolgaDreamApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF0D4F6E),
+          seedColor: const Color(0xFF0C484C),
+          tertiary: const Color(0xFFC8A84E),
         ),
         useMaterial3: true,
       ),

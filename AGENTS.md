@@ -9,7 +9,7 @@
 - **Точка входа:** `lib/main.dart` → `NextTourScreen` (стартовый экран)
 - **SDK:** Dart ^3.11.5, Flutter stable
 - **Линтер:** `package:flutter_lints/flutter.yaml` — кастомные правила в `analysis_options.yaml` закомментированы
-- **Тема:** Material Design 3, seed `Color(0xFF0D4F6E)`
+- **Тема:** Material Design 3, seed `Color(0xFF0C484C)` (фирменный цвет бренда из логотипа), gold accent `Color(0xFFC8A84E)`
 
 ## Архитектура
 

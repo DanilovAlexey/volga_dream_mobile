@@ -54,7 +54,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
             ),
           ],
         ),
-        backgroundColor: const Color(0xFF0D4F6E),
+        backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Colors.white,
       ),
       body: FutureBuilder<Cruise>(
@@ -103,7 +103,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
           return Column(
             children: [
               Material(
-                color: const Color(0xFF0D4F6E),
+                color: Theme.of(context).colorScheme.primary,
                 child: TabBar(
                   controller: _tabController,
                   isScrollable: true,
@@ -142,7 +142,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 0,
-        selectedItemColor: const Color(0xFF0D4F6E),
+        selectedItemColor: Theme.of(context).colorScheme.primary,
         items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.schedule),
@@ -195,6 +195,7 @@ class _DayTimeline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -207,7 +208,7 @@ class _DayTimeline extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xFF0D4F6E),
+                  color: theme.colorScheme.primary,
                 ),
               ),
               Column(
@@ -302,7 +303,7 @@ class _DayTimeline extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF0D2135),
+                                  color: theme.colorScheme.onSurface,
                                 ),
                               ),
                               const SizedBox(height: 4),
