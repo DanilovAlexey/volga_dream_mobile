@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../models/cruise.dart';
 import '../services/service_interfaces.dart';
 import 'activity_detail_screen.dart';
@@ -45,7 +46,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Volga Dream'),
+            Text('Volga Dream', style: GoogleFonts.raleway()),
             Text(
               widget.tourName,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
