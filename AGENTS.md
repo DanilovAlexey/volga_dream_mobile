@@ -9,7 +9,11 @@
 - **Точка входа:** `lib/main.dart` → `NextTourScreen` (стартовый экран)
 - **SDK:** Dart ^3.11.5, Flutter stable
 - **Линтер:** `package:flutter_lints/flutter.yaml` — кастомные правила в `analysis_options.yaml` закомментированы
-- **Тема:** Material Design 3, seed `Color(0xFF0C484C)` (фирменный цвет бренда из логотипа), gold accent `Color(0xFFC8A84E)`
+- **Тема:** Material Design 3, seed `Color(0xFF0C484C)` (фирменный цвет бренда из логотипа), gold accent `Color(0xFFbbab8e)` (из CSS сайта)
+- **Тема описана в:** `lib/main.dart` — `theme:` блок `ThemeData` с кастомными:
+  - `textTheme`: заголовки — Goldenbook, body — Raleway (через `GoogleFonts.ralewayTextTheme()`)
+  - `filledButtonTheme`: стиль как на сайте (uppercase, letter-spacing, border-radius 3px)
+  - Цвета: `display`/`headline`/`title` — `#202024`, body — из `colorScheme.onSurface`
 
 ## Архитектура
 
@@ -76,6 +80,23 @@ flutter build apk                        # сборка APK
 - Единственный файл: `test/widget_test.dart` — проверяет, что NextTourScreen показывает ошибку загрузки (нет сервера в тестах) и кнопку повтора
 - Нет интеграционных тестов, фикстур, тестовых сервисов
 - При добавлении фич писать widget-тесты по тому же шаблону
+
+## Шрифты
+
+- **Goldenbook** (кастомный woff2 с сайта) — для заголовка "VOLGA DREAM"
+- Bundled как asset-шрифты в `pubspec.yaml`:
+  ```yaml
+  fonts:
+    - family: Goldenbook
+      fonts:
+        - asset: assets/fonts/Goldenbook.woff2
+        - asset: assets/fonts/Goldenbook-light.woff2
+          weight: 300
+  ```
+- Файлы: `assets/fonts/Goldenbook.woff2` (regular), `assets/fonts/Goldenbook-light.woff2` (weight 300)
+- **Raleway** — для body-текста (через `GoogleFonts.ralewayTextTheme()` в `main.dart`)
+- **Montserrat** — резервный шрифт (загружается сайтом, но в приложении не используется)
+- `google_fonts` версии 8.1.0 в зависимостях — для загрузки Raleway
 
 ## Стиль
 

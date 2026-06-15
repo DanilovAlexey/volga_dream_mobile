@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../models/tour.dart';
 import '../services/service_interfaces.dart';
 import 'schedule_screen.dart';
@@ -198,12 +197,12 @@ class _NextTourScreenState extends State<NextTourScreen> {
                     children: [
                       const SizedBox(height: 16),
                       Text(
-                        'Volga Dream',
-                        style: GoogleFonts.raleway(
-                          color: Colors.white.withAlpha(200),
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                        'VOLGA DREAM',
+                        style: TextStyle(
+                          fontFamily: 'Goldenbook',
+                          fontSize: 18,
                           letterSpacing: 2,
+                          color: Colors.white.withAlpha(200),
                         ),
                       ),
                       const Spacer(),
