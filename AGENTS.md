@@ -89,11 +89,12 @@ flutter build apk                        # сборка APK
   fonts:
     - family: Goldenbook
       fonts:
+        - asset: assets/fonts/Goldenbook.ttf
         - asset: assets/fonts/Goldenbook.woff2
         - asset: assets/fonts/Goldenbook-light.woff2
           weight: 300
   ```
-- Файлы: `assets/fonts/Goldenbook.woff2` (regular), `assets/fonts/Goldenbook-light.woff2` (weight 300)
+- Файлы: `assets/fonts/Goldenbook.ttf` (regular, основной), `assets/fonts/Goldenbook.woff2` (regular woff2), `assets/fonts/Goldenbook-light.woff2` (weight 300)
 - **Raleway** — для body-текста (через `GoogleFonts.ralewayTextTheme()` в `main.dart`)
 - **Montserrat** — резервный шрифт (загружается сайтом, но в приложении не используется)
 - `google_fonts` версии 8.1.0 в зависимостях — для загрузки Raleway

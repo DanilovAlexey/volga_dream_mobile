@@ -73,6 +73,7 @@ flutter:
   fonts:
     - family: Goldenbook
       fonts:
+        - asset: assets/fonts/Goldenbook.ttf
         - asset: assets/fonts/Goldenbook.woff2
         - asset: assets/fonts/Goldenbook-light.woff2
           weight: 300
