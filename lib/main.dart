@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'screens/next_tour_screen.dart';
+import 'services/service_interfaces.dart';
 import 'services/service_locator.dart';
 
-void main() {
-  runApp(VolgaDreamApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final notificationService = ServiceLocator.createNotificationService();
+  await notificationService.initialize();
+  runApp(VolgaDreamApp(notificationService: notificationService));
 }
 
 class VolgaDreamApp extends StatelessWidget {
-  const VolgaDreamApp({super.key});
+  final INotificationService notificationService;
+
+  const VolgaDreamApp({super.key, required this.notificationService});
 
   @override
   Widget build(BuildContext context) {
@@ -58,6 +64,7 @@ class VolgaDreamApp extends StatelessWidget {
       home: NextTourScreen(
         tourService: tourService,
         cruiseService: cruiseService,
+        notificationService: notificationService,
       ),
     );
   }

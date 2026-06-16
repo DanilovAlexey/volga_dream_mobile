@@ -7,12 +7,16 @@ class ScheduleScreen extends StatefulWidget {
   final String tourName;
   final String scheduleId;
   final ICruiseService cruiseService;
+  final INotificationService notificationService;
+  final DateTime tourStartDate;
 
   const ScheduleScreen({
     super.key,
     required this.tourName,
     required this.scheduleId,
     required this.cruiseService,
+    required this.notificationService,
+    required this.tourStartDate,
   });
 
   @override
@@ -128,6 +132,8 @@ class _ScheduleScreenState extends State<ScheduleScreen>
                             builder: (_) => ActivityDetailScreen(
                               activity: activity,
                               day: day,
+                              notificationService: widget.notificationService,
+                              tourStartDate: widget.tourStartDate,
                             ),
                           ),
                         );
