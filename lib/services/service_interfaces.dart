@@ -10,3 +10,17 @@ abstract class ICruiseService {
   Future<Cruise> fetchCruise({required String scheduleId});
   void dispose();
 }
+
+abstract class INotificationService {
+  Future<void> initialize();
+  Future<bool> scheduleReminder({
+    required String activityId,
+    required String title,
+    required String body,
+    required DateTime startTime,
+    int minutesBefore = 15,
+  });
+  Future<void> showTestNotification();
+  Future<void> cancelReminder(String activityId);
+  void dispose();
+}

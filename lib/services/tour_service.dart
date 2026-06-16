@@ -13,8 +13,8 @@ class TourService implements ITourService {
       scheduleId: "00000002-0000-0000-0000-000000000001",
       name: 'Волжское путешествие',
       shipName: 'Александр Невский',
-      startDate: DateTime(2026, 7, 1),
-      endDate: DateTime(2026, 7, 5),
+      startDate: DateTime(2026, 6, 15),
+      endDate: DateTime(2026, 6, 18),
       imageUrl: "https://volgadream.ru/wp-content/uploads/2024/10/znakomstvo-s-volgoj-gl-2026-scaled.webp"
     );
   }

@@ -86,7 +86,7 @@ class CruiseService implements ICruiseService {
               title: 'Лекция: Флора и фауна дельты Волги',
               description: 'Научно-популярная лекция о природе Астраханского заповедника, редких видах птиц и рыб.',
               type: ActivityType.lecture,
-              timeRange: '16:00 – 17:30',
+              timeRange: '15:25 – 17:30',
               location: 'Конференц-зал, палуба 3',
               dayIndex: 2,
               lecturer: 'К.б.н. Ирина Петровна Морозова',

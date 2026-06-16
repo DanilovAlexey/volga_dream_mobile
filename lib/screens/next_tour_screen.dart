@@ -6,11 +6,13 @@ import 'schedule_screen.dart';
 class NextTourScreen extends StatefulWidget {
   final ITourService tourService;
   final ICruiseService cruiseService;
+  final INotificationService notificationService;
 
   const NextTourScreen({
     super.key,
     required this.tourService,
     required this.cruiseService,
+    required this.notificationService,
   });
 
   @override
@@ -40,6 +42,8 @@ class _NextTourScreenState extends State<NextTourScreen> {
           tourName: tour.name,
           scheduleId: tour.scheduleId,
           cruiseService: widget.cruiseService,
+          notificationService: widget.notificationService,
+          tourStartDate: tour.startDate,
         ),
       ),
     );
