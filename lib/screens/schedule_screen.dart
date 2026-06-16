@@ -45,7 +45,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Volga Dream'),
+            Text('VOLGA DREAM', style: TextStyle(fontFamily: 'Goldenbook')),
             Text(
               widget.tourName,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
