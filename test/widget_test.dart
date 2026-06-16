@@ -14,8 +14,11 @@ class _MockNotificationService implements INotificationService {
     int minutesBefore = 15,
   }) async => true;
   @override
+<<<<<<< HEAD
   Future<void> showTestNotification() async {}
   @override
+=======
+>>>>>>> e42419f54abf563523bae483dafe15f2d333e436
   Future<void> cancelReminder(String activityId) async {}
   @override
   void dispose() {}

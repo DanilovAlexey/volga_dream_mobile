@@ -1,5 +1,8 @@
+<<<<<<< HEAD
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+=======
+>>>>>>> e42419f54abf563523bae483dafe15f2d333e436
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
@@ -25,12 +28,15 @@ class NotificationService implements INotificationService {
       iOS: iosSettings,
     );
     await _plugin.initialize(settings: settings);
+<<<<<<< HEAD
 
     if (Platform.isAndroid) {
       final androidImpl = _plugin.resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin>();
       await androidImpl?.requestNotificationsPermission();
     }
+=======
+>>>>>>> e42419f54abf563523bae483dafe15f2d333e436
   }
 
   @override
@@ -77,6 +83,7 @@ class NotificationService implements INotificationService {
   }
 
   @override
+<<<<<<< HEAD
   Future<void> showTestNotification() async {
     final notifyTime = DateTime.now().add(const Duration(seconds: 15));
 
@@ -109,6 +116,8 @@ class NotificationService implements INotificationService {
   }
 
   @override
+=======
+>>>>>>> e42419f54abf563523bae483dafe15f2d333e436
   Future<void> cancelReminder(String activityId) async {
     await _plugin.cancel(id: activityId.hashCode);
   }

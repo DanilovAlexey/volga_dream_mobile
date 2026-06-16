@@ -20,7 +20,10 @@ abstract class INotificationService {
     required DateTime startTime,
     int minutesBefore = 15,
   });
+<<<<<<< HEAD
   Future<void> showTestNotification();
+=======
+>>>>>>> e42419f54abf563523bae483dafe15f2d333e436
   Future<void> cancelReminder(String activityId);
   void dispose();
 }
