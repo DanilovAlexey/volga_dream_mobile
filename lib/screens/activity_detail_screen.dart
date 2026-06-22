@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../models/cruise.dart';
+import '../models/reminder.dart';
+import '../services/reminder_service.dart';
 
-class ActivityDetailScreen extends StatelessWidget {
+class ActivityDetailScreen extends StatefulWidget {
   final Activity activity;
   final DayItinerary day;
 
@@ -10,6 +12,29 @@ class ActivityDetailScreen extends StatelessWidget {
     required this.activity,
     required this.day,
   });
+
+  @override
+  State<ActivityDetailScreen> createState() => _ActivityDetailScreenState();
+}
+
+class _ActivityDetailScreenState extends State<ActivityDetailScreen> {
+  final _reminderService = ReminderService.instance;
+  int? _selectedMinutes;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadReminder();
+  }
+
+  Future<void> _loadReminder() async {
+    final minutes = await _reminderService.getReminderMinutes(widget.activity.id);
+    if (mounted) {
+      setState(() {
+        _selectedMinutes = minutes;
+      });
+    }
+  }
 
   String _labelForType(ActivityType type) {
     switch (type) {
@@ -30,6 +55,49 @@ class ActivityDetailScreen extends StatelessWidget {
         return Icons.directions_walk;
       case ActivityType.meal:
         return Icons.restaurant;
+    }
+  }
+
+  DateTime _parseStartTime() {
+    return ReminderService.parseActivityStart(
+      widget.day.dayDate,
+      widget.activity.timeRange,
+    );
+  }
+
+  Future<void> _setReminder(int minutesBefore) async {
+    final start = _parseStartTime();
+    final id = '${widget.activity.id}_$minutesBefore';
+    final reminder = Reminder(
+      id: id,
+      activityId: widget.activity.id,
+      activityTitle: widget.activity.title,
+      activityStart: start,
+      minutesBefore: minutesBefore,
+      dayIndex: widget.activity.dayIndex,
+    );
+    await _reminderService.setReminder(reminder);
+    if (mounted) {
+      setState(() => _selectedMinutes = minutesBefore);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Напоминание установлено за $minutesBefore мин. до начала'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
+  Future<void> _removeReminder() async {
+    await _reminderService.removeReminderByActivity(widget.activity.id);
+    if (mounted) {
+      setState(() => _selectedMinutes = null);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Напоминание удалено'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     }
   }
 
@@ -161,37 +229,80 @@ class ActivityDetailScreen extends StatelessWidget {
                     value: activity.timeRange,
                   ),
                   const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Уведомление установлено за 15 минут до начала',
-                            ),
-                            behavior: SnackBarBehavior.floating,
+                  if (_selectedMinutes != null)
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: _removeReminder,
+                        icon: const Icon(Icons.notifications_off),
+                        label: Text('Напоминание за $_selectedMinutes мин. (отменить)'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.red,
+                          side: const BorderSide(color: Colors.red),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                        );
-                      },
-                      icon: const Icon(Icons.notifications_active),
-                      label: const Text('Напомнить за 15 минут'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: theme.colorScheme.primary,
-                        side: BorderSide(color: theme.colorScheme.primary),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                    ),
-                  ),
+                    )
+                  else
+                    _ReminderSelector(onSelect: _setReminder),
                 ],
               ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Activity get activity => widget.activity;
+}
+
+class _ReminderSelector extends StatelessWidget {
+  final void Function(int minutes) onSelect;
+
+  const _ReminderSelector({required this.onSelect});
+
+  static const _options = [15, 30, 45, 60];
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'НАПОМИНАНИЕ',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: Colors.grey[500],
+            letterSpacing: 0.5,
+          ),
+        ),
+        const SizedBox(height: 12),
+        ..._options.map((minutes) => Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () => onSelect(minutes),
+                  icon: const Icon(Icons.notifications_active),
+                  label: Text('Напомнить за $minutes минут'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: theme.colorScheme.primary,
+                    side: BorderSide(color: theme.colorScheme.primary),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+            )),
+      ],
     );
   }
 }
