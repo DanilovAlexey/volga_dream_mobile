@@ -9,10 +9,9 @@
 - **Точка входа:** `lib/main.dart` → `NextTourScreen` (стартовый экран)
 - **SDK:** Dart ^3.11.5, Flutter stable
 - **Линтер:** `package:flutter_lints/flutter.yaml` — кастомные правила в `analysis_options.yaml` закомментированы
-- **Тема:** Material Design 3, seed `Color(0xFF0C484C)` (фирменный цвет бренда из логотипа), gold accent `Color(0xFFbbab8e)` (из CSS сайта)
-- **Тема описана в:** `lib/main.dart` — `theme:` блок `ThemeData` с кастомными:
-  - `textTheme`: заголовки — Goldenbook, body — Raleway (через `GoogleFonts.ralewayTextTheme()`)
-  - `filledButtonTheme`: стиль как на сайте (uppercase, letter-spacing, border-radius 3px)
+- **Тема:** Material Design 3, seed `Color(0xFF0C484C)`, gold accent `Color(0xFFbbab8e)`
+  - `textTheme`: заголовки — Goldenbook (bundled asset), body — Raleway (GoogleFonts)
+  - `filledButtonTheme`: uppercase, letter-spacing 2.2, border-radius 3px
   - Цвета: `display`/`headline`/`title` — `#202024`, body — из `colorScheme.onSurface`
 
 ## Архитектура
@@ -20,44 +19,36 @@
 ```
 lib/
   models/
-    cruise.dart       # Activity, DayItinerary, Cruise (с JSON-сериализацией)
-    tour.dart         # TourInfo (id UUID, name, shipName, startDate, endDate)
+    cruise.dart       # Activity, DayItinerary, Cruise (JSON serialization)
+    tour.dart         # TourInfo (scheduleId, name, shipName, dates, imageUrl)
   screens/
-    next_tour_screen.dart        # Стартовый экран: hero-секция + название тура
-    schedule_screen.dart         # Расписание с TabBar по дням
-    activity_detail_screen.dart  # Детали активности
+    next_tour_screen.dart        # Hero section + tour info
+    schedule_screen.dart         # TabBar per day
+    activity_detail_screen.dart  # Activity details
   services/
-    service_interfaces.dart      # ITourService, ICruiseService — абстракции
-    service_locator.dart         # ServiceLocator — фабрика сервисов (--dart-define USE_MOCKS)
-    tour_service.dart            # Мок TourService (implements ITourService)
-    tour_api_service.dart        # HTTP TourApiService (implements ITourService)
-    cruise_service.dart          # Мок CruiseService (implements ICruiseService)
-    cruise_api_service.dart      # HTTP CruiseApiService (implements ICruiseService)
+    service_interfaces.dart      # ITourService, ICruiseService
+    service_locator.dart         # Factory: --dart-define=USE_MOCKS
+    {tour,cruise}_service.dart   # Mocks (hardcoded data, Russian)
+    {tour,cruise}_api_service.dart  # HTTP (localhost:8080)
 ```
 
 **Навигация:** `NextTourScreen` → (кнопка "Подробнее") → `ScheduleScreen` → (onTap) → `ActivityDetailScreen`
 
-**Сервисы подменяются через `ServiceLocator`** в `main.dart` в зависимости от `--dart-define=USE_MOCKS`:
-- `true` — моки (`TourService` + `CruiseService`) — данные вшиты, без сервера
-- `false` / не указан — реальные HTTP (`TourApiService` на `localhost:8080/cruise/nearest` + `CruiseApiService` на `localhost:8080/cruise`)
+**Mock toggle:** `--dart-define=USE_MOCKS=true` (default false = localhost:8080)
+- Mock tour dates: 2026-07-01 to 2026-07-05 (фиксированные — важно для тестов)
+- `HttpException` класс: `lib/services/cruise_api_service.dart:42`
 
-Экраны принимают сервисы через конструктор (инъекция):
+**Сервисы через конструктор:**
 ```dart
 NextTourScreen(tourService:, cruiseService:)
 ScheduleScreen(cruiseService:)
 ```
 
 **Нет state management** (setState), **нет роутинга** (Navigator.push).
-Новые экраны, сервисы и модели добавлять в соответствующие директории.
 
 ## CORS (Chrome)
 
-При локальном запуске в Chrome `Image.network()` может выдавать CORS-ошибку из-за ограничений браузера. Чтобы избежать этого, используй в мок-данных `imageUrl` с реального сервера, который отдаёт корректные заголовки:
-```
-https://volgadream.ru/wp-content/uploads/2024/10/znakomstvo-s-volgoj-gl-2026-scaled.webp
-```
-
-Альтернатива — запускать Chrome без CORS:
+`Image.network()` может выдавать CORS в Chrome. Использовать либо реальный URL в `imageUrl` с корректными заголовками, либо запускать без CORS:
 ```powershell
 flutter run -d chrome --web-browser-flag "--disable-web-security"
 ```
@@ -65,42 +56,32 @@ flutter run -d chrome --web-browser-flag "--disable-web-security"
 ## Команды (PowerShell)
 
 ```powershell
-flutter pub get                          # зависимости (http, cupertino_icons, flutter_lints)
+flutter pub get
 flutter analyze                          # линтер + типы
 flutter test                             # все тесты
 flutter test test/widget_test.dart       # конкретный тест
-flutter run                              # запуск (реальный сервер)
-flutter run --dart-define=USE_MOCKS=true  # запуск с моками (без сервера)
+flutter run                              # реальный сервер
+flutter run --dart-define=USE_MOCKS=true  # моки, без сервера
 flutter run -d chrome --dart-define=USE_MOCKS=true  # Chrome + моки
-flutter build apk                        # сборка APK
+flutter build apk
+flutter clean
 ```
 
 ## Тесты
 
-- Единственный файл: `test/widget_test.dart` — проверяет, что NextTourScreen показывает ошибку загрузки (нет сервера в тестах) и кнопку повтора
-- Нет интеграционных тестов, фикстур, тестовых сервисов
+- Единственный файл: `test/widget_test.dart` — русские строки: `'Не удалось загрузить информацию о туре'`, `'Повторить'`
+- Проверяет, что NextTourScreen показывает ошибку загрузки (нет сервера в тестах) + кнопку повтора
 - При добавлении фич писать widget-тесты по тому же шаблону
 
 ## Шрифты
 
-- **Goldenbook** (кастомный woff2 с сайта) — для заголовка "VOLGA DREAM"
-- Bundled как asset-шрифты в `pubspec.yaml`:
-  ```yaml
-  fonts:
-    - family: Goldenbook
-      fonts:
-        - asset: assets/fonts/Goldenbook.ttf
-        - asset: assets/fonts/Goldenbook.woff2
-        - asset: assets/fonts/Goldenbook-light.woff2
-          weight: 300
-  ```
-- Файлы: `assets/fonts/Goldenbook.ttf` (regular, основной), `assets/fonts/Goldenbook.woff2` (regular woff2), `assets/fonts/Goldenbook-light.woff2` (weight 300)
-- **Raleway** — для body-текста (через `GoogleFonts.ralewayTextTheme()` в `main.dart`)
-- **Montserrat** — резервный шрифт (загружается сайтом, но в приложении не используется)
-- `google_fonts` версии 8.1.0 в зависимостях — для загрузки Raleway
+- **Goldenbook** — кастомный, bundled в `pubspec.yaml`. Файлы: `assets/fonts/Goldenbook.{ttf,woff2}` (regular) + `Goldenbook-light.woff2` (weight 300)
+- **Raleway** — body (через `GoogleFonts.ralewayTextTheme()`, пакет `google_fonts: ^8.1.0`)
+- **Montserrat** — загружается сайтом, в приложении не используется
 
 ## Стиль
 
-- Стандартный Material Design 3 (MaterialApp, Scaffold), сине-голубая тема
-- Dart: `camelCase`, `const`-конструкторы, `super.key`
-- При добавлении пакетов — сначала `flutter pub add`
+- Material Design 3 (MaterialApp, Scaffold)
+- `const`-конструкторы, `super.key`
+- Новые пакеты — через `flutter pub add`
+- Новые экраны, сервисы и модели — в соответствующие директории `lib/`

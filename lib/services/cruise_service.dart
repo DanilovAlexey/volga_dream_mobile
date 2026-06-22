@@ -11,9 +11,12 @@ class CruiseService implements ICruiseService {
     return Cruise(
       name: 'Волжское путешествие',
       shipName: 'Александр Невский',
+      startDate: DateTime(2026, 7, 1),
+      endDate: DateTime(2026, 7, 5),
       days: [
         DayItinerary(
           dayIndex: 1,
+          dayDate: DateTime(2026, 7, 1),
           dateLabel: '1 июня 2026',
           title: 'Астрахань — посадка',
           locationName: 'Астрахань',
@@ -50,6 +53,7 @@ class CruiseService implements ICruiseService {
         ),
         DayItinerary(
           dayIndex: 2,
+          dayDate: DateTime(2026, 7, 2),
           dateLabel: '2 июня 2026',
           title: 'Астрахань — экскурсия',
           locationName: 'Астрахань',
@@ -104,6 +108,7 @@ class CruiseService implements ICruiseService {
         ),
         DayItinerary(
           dayIndex: 3,
+          dayDate: DateTime(2026, 7, 3),
           dateLabel: '3 июня 2026',
           title: 'Мышкин',
           locationName: 'Мышкин — Углич',
@@ -168,6 +173,7 @@ class CruiseService implements ICruiseService {
         ),
         DayItinerary(
           dayIndex: 4,
+          dayDate: DateTime(2026, 7, 4),
           dateLabel: '4 июня 2026',
           title: 'Углич — Мышкин',
           locationName: 'Углич',
@@ -222,6 +228,7 @@ class CruiseService implements ICruiseService {
         ),
         DayItinerary(
           dayIndex: 5,
+          dayDate: DateTime(2026, 7, 5),
           dateLabel: '5 июня 2026',
           title: 'Москва — высадка',
           locationName: 'Москва',
