@@ -452,7 +452,35 @@ class _AboutTabState extends State<_AboutTab> {
                   ],
                 ],
               ),
-              const SizedBox(height: 24),
+              if (info.imageUrl != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 20, bottom: 24),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.network(
+                      info.imageUrl!,
+                      width: double.infinity,
+                      height: 200,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => Container(
+                        height: 200,
+                        color: Colors.grey[200],
+                        child: Icon(Icons.broken_image,
+                            size: 48, color: Colors.grey[400]),
+                      ),
+                      loadingBuilder: (_, child, progress) =>
+                          progress == null
+                              ? child
+                              : Container(
+                                  height: 200,
+                                  color: Colors.grey[100],
+                                  child: const Center(
+                                      child: CircularProgressIndicator()),
+                                ),
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 4),
               Text(
                 info.description,
                 style: TextStyle(
@@ -461,41 +489,6 @@ class _AboutTabState extends State<_AboutTab> {
                   color: theme.colorScheme.onSurface,
                 ),
               ),
-              const SizedBox(height: 32),
-              if (info.highlights.isNotEmpty) ...[
-                Text(
-                  'ВСЁ ВКЛЮЧЕНО',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey[500],
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                ...info.highlights.map(
-                  (h) => Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Icon(Icons.check_circle,
-                            size: 18, color: theme.colorScheme.tertiary),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            h,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: theme.colorScheme.onSurface,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
               const SizedBox(height: 32),
               SizedBox(
                 width: double.infinity,

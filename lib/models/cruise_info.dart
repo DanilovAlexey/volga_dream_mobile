@@ -2,39 +2,37 @@ import 'dart:convert';
 
 class CruiseInfo {
   final String description;
-  final List<String> highlights;
   final String externalUrl;
   final String duration;
   final String direction;
   final String? priceFrom;
+  final String? imageUrl;
 
   const CruiseInfo({
     required this.description,
-    required this.highlights,
     required this.externalUrl,
     required this.duration,
     required this.direction,
     this.priceFrom,
+    this.imageUrl,
   });
 
   factory CruiseInfo.fromJson(Map<String, dynamic> json) => CruiseInfo(
         description: json['description'] as String,
-        highlights: (json['highlights'] as List<dynamic>)
-            .map((e) => e as String)
-            .toList(),
         externalUrl: json['externalUrl'] as String,
         duration: json['duration'] as String,
         direction: json['direction'] as String,
         priceFrom: json['priceFrom'] as String?,
+        imageUrl: json['imageUrl'] as String?,
       );
 
   Map<String, dynamic> toJson() => {
         'description': description,
-        'highlights': highlights,
         'externalUrl': externalUrl,
         'duration': duration,
         'direction': direction,
         'priceFrom': priceFrom,
+        'imageUrl': imageUrl,
       };
 
   String toRawJson() => jsonEncode(toJson());
