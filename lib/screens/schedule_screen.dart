@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher.dart' show launchUrl, LaunchMode;
 import '../models/cruise.dart';
 import '../models/cruise_info.dart';
 import '../models/reminder.dart';
@@ -519,9 +519,9 @@ class _AboutTabState extends State<_AboutTab> {
 
   void _openUrl(BuildContext context, String url) async {
     final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
+    try {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
+    } catch (_) {}
   }
 }
 
