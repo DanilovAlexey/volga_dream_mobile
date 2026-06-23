@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../models/cruise.dart';
+import '../models/cruise_info.dart';
 import '../models/reminder.dart';
 import '../services/service_interfaces.dart';
 import '../services/reminder_service.dart';
+import '../services/service_locator.dart';
 import 'activity_detail_screen.dart';
 
 class ScheduleScreen extends StatefulWidget {
@@ -27,6 +30,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
   late TabController _tabController;
   int _currentTab = 0;
   final _reminderService = ReminderService.instance;
+  final _aboutCruiseService = ServiceLocator.createAboutCruiseService();
 
   @override
   void initState() {
@@ -39,6 +43,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
   @override
   void dispose() {
     _tabController.dispose();
+    _aboutCruiseService.dispose();
     super.dispose();
   }
 
@@ -101,7 +106,10 @@ class _ScheduleScreenState extends State<ScheduleScreen>
       return _NotificationsTab(reminderService: _reminderService);
     }
     if (_currentTab == 2) {
-      return _AboutTab();
+      return _AboutTab(
+        aboutCruiseService: _aboutCruiseService,
+        scheduleId: widget.scheduleId,
+      );
     }
     return _buildScheduleTab();
   }
@@ -352,38 +360,168 @@ class _NotificationsTabState extends State<_NotificationsTab> {
   }
 }
 
-class _AboutTab extends StatelessWidget {
+class _AboutTab extends StatefulWidget {
+  final IAboutCruiseService aboutCruiseService;
+  final String scheduleId;
+
+  const _AboutTab({
+    required this.aboutCruiseService,
+    required this.scheduleId,
+  });
+
+  @override
+  State<_AboutTab> createState() => _AboutTabState();
+}
+
+class _AboutTabState extends State<_AboutTab> {
+  late Future<CruiseInfo> _infoFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _infoFuture = widget.aboutCruiseService.fetchAboutCruise(
+      scheduleId: widget.scheduleId,
+    );
+  }
+
+  void _retry() {
+    setState(() {
+      _infoFuture = widget.aboutCruiseService.fetchAboutCruise(
+        scheduleId: widget.scheduleId,
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.directions_boat, size: 64, color: theme.colorScheme.primary),
-            const SizedBox(height: 16),
-            Text(
-              'Volga Dream',
-              style: theme.textTheme.headlineMedium,
+    return FutureBuilder<CruiseInfo>(
+      future: _infoFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.cloud_off, size: 64, color: Colors.grey[400]),
+                const SizedBox(height: 16),
+                Text(
+                  'Не удалось загрузить информацию о круизе',
+                  style: theme.textTheme.titleMedium,
+                ),
+                const SizedBox(height: 16),
+                FilledButton.icon(
+                  onPressed: _retry,
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Повторить'),
+                ),
+              ],
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Ваш идеальный круиз по Волге',
-              style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'Приложение для отслеживания расписания\nи получения напоминаний о событиях круиза.',
-              style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey[500]),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
+          );
+        }
+        final info = snapshot.data!;
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                info.direction,
+                style: theme.textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(Icons.schedule, size: 16, color: Colors.grey[600]),
+                  const SizedBox(width: 4),
+                  Text(
+                    info.duration,
+                    style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                  ),
+                  if (info.priceFrom != null) ...[
+                    const SizedBox(width: 16),
+                    Icon(Icons.attach_money, size: 16, color: Colors.grey[600]),
+                    const SizedBox(width: 4),
+                    Text(
+                      info.priceFrom!,
+                      style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                    ),
+                  ],
+                ],
+              ),
+              const SizedBox(height: 24),
+              Text(
+                info.description,
+                style: TextStyle(
+                  fontSize: 15,
+                  height: 1.6,
+                  color: theme.colorScheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 32),
+              if (info.highlights.isNotEmpty) ...[
+                Text(
+                  'ВСЁ ВКЛЮЧЕНО',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[500],
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ...info.highlights.map(
+                  (h) => Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(Icons.check_circle,
+                            size: 18, color: theme.colorScheme.tertiary),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            h,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: theme.colorScheme.onSurface,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () => _openUrl(context, info.externalUrl),
+                  icon: const Icon(Icons.open_in_new, size: 18),
+                  label: const Text('ПОДРОБНЕЕ НА САЙТЕ'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: theme.colorScheme.primary,
+                    side: BorderSide(color: theme.colorScheme.primary),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
+  }
+
+  void _openUrl(BuildContext context, String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
   }
 }
 
