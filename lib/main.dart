@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'screens/next_tour_screen.dart';
 import 'services/service_locator.dart';
+import 'services/reminder_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await ReminderService.instance.initialize();
   runApp(VolgaDreamApp());
 }
 

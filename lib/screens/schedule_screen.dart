@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../models/cruise.dart';
+import '../models/reminder.dart';
 import '../services/service_interfaces.dart';
+import '../services/reminder_service.dart';
 import 'activity_detail_screen.dart';
 
 class ScheduleScreen extends StatefulWidget {
@@ -23,6 +25,8 @@ class _ScheduleScreenState extends State<ScheduleScreen>
     with TickerProviderStateMixin {
   late Future<Cruise> _cruiseFuture;
   late TabController _tabController;
+  int _currentTab = 0;
+  final _reminderService = ReminderService.instance;
 
   @override
   void initState() {
@@ -40,109 +44,40 @@ class _ScheduleScreenState extends State<ScheduleScreen>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('VOLGA DREAM', style: TextStyle(fontFamily: 'Goldenbook')),
-            Text(
-              widget.tourName,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.white70,
-                  ),
-            ),
-          ],
-        ),
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Colors.white,
-      ),
-      body: FutureBuilder<Cruise>(
-        future: _cruiseFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
+      appBar: _currentTab == 0
+          ? AppBar(
+              title: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.cloud_off, size: 64, color: Colors.grey[400]),
-                  const SizedBox(height: 16),
+                  Text('VOLGA DREAM', style: TextStyle(fontFamily: 'Goldenbook')),
                   Text(
-                    'Не удалось загрузить данные',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    snapshot.error.toString(),
-                    style: Theme.of(context).textTheme.bodySmall,
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  FilledButton.icon(
-                    onPressed: () {
-                      setState(() {
-                        _cruiseFuture = widget.cruiseService.fetchCruise(scheduleId: widget.scheduleId);
-                      });
-                    },
-                    icon: const Icon(Icons.refresh),
-                    label: const Text('Повторить'),
+                    widget.tourName,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.white70,
+                        ),
                   ),
                 ],
               ),
-            );
-          }
-          final cruise = snapshot.data!;
-          _tabController.dispose();
-          _tabController = TabController(
-            length: cruise.days.length,
-            vsync: this,
-          );
-          return Column(
-            children: [
-              Material(
-                color: Theme.of(context).colorScheme.primary,
-                child: TabBar(
-                  controller: _tabController,
-                  isScrollable: true,
-                  indicatorColor: Colors.white,
-                  labelColor: Colors.white,
-                  unselectedLabelColor: Colors.white60,
-                  tabs: cruise.days.map((day) {
-                    return Tab(text: 'День ${day.dayIndex}');
-                  }).toList(),
-                ),
+              backgroundColor: theme.colorScheme.primary,
+              foregroundColor: Colors.white,
+            )
+          : AppBar(
+              title: Text(
+                _currentTab == 1 ? 'Уведомления' : 'О круизе',
+                style: const TextStyle(fontFamily: 'Goldenbook'),
               ),
-              Expanded(
-                child: TabBarView(
-                  controller: _tabController,
-                  children: cruise.days.map((day) {
-                    return _DayTimeline(
-                      day: day,
-                      onActivityTap: (activity) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => ActivityDetailScreen(
-                              activity: activity,
-                              day: day,
-                            ),
-                          ),
-                        );
-                      },
-                    );
-                  }).toList(),
-                ),
-              ),
-            ],
-          );
-        },
-      ),
+              backgroundColor: theme.colorScheme.primary,
+              foregroundColor: Colors.white,
+            ),
+      body: _buildBody(),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0,
-        selectedItemColor: Theme.of(context).colorScheme.primary,
+        currentIndex: _currentTab,
+        selectedItemColor: theme.colorScheme.primary,
+        onTap: (index) {
+          setState(() => _currentTab = index);
+        },
         items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.schedule),
@@ -157,6 +92,296 @@ class _ScheduleScreenState extends State<ScheduleScreen>
             label: 'О круизе',
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildBody() {
+    if (_currentTab == 1) {
+      return _NotificationsTab(reminderService: _reminderService);
+    }
+    if (_currentTab == 2) {
+      return _AboutTab();
+    }
+    return _buildScheduleTab();
+  }
+
+  Widget _buildScheduleTab() {
+    return FutureBuilder<Cruise>(
+      future: _cruiseFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.cloud_off, size: 64, color: Colors.grey[400]),
+                const SizedBox(height: 16),
+                Text(
+                  'Не удалось загрузить данные',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  snapshot.error.toString(),
+                  style: Theme.of(context).textTheme.bodySmall,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                FilledButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      _cruiseFuture = widget.cruiseService.fetchCruise(scheduleId: widget.scheduleId);
+                    });
+                  },
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Повторить'),
+                ),
+              ],
+            ),
+          );
+        }
+        final cruise = snapshot.data!;
+        _tabController.dispose();
+        _tabController = TabController(
+          length: cruise.days.length,
+          vsync: this,
+        );
+        return Column(
+          children: [
+            Material(
+              color: Theme.of(context).colorScheme.primary,
+              child: TabBar(
+                controller: _tabController,
+                isScrollable: true,
+                indicatorColor: Colors.white,
+                labelColor: Colors.white,
+                unselectedLabelColor: Colors.white60,
+                tabs: cruise.days.map((day) {
+                  return Tab(text: 'День ${day.dayIndex}');
+                }).toList(),
+              ),
+            ),
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: cruise.days.map((day) {
+                  return _DayTimeline(
+                    day: day,
+                    onActivityTap: (activity) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ActivityDetailScreen(
+                            activity: activity,
+                            day: day,
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                }).toList(),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _NotificationsTab extends StatefulWidget {
+  final ReminderService reminderService;
+
+  const _NotificationsTab({required this.reminderService});
+
+  @override
+  State<_NotificationsTab> createState() => _NotificationsTabState();
+}
+
+class _NotificationsTabState extends State<_NotificationsTab> {
+  late Future<List<Reminder>> _remindersFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _remindersFuture = widget.reminderService.getReminders();
+  }
+
+  void _reload() {
+    setState(() {
+      _remindersFuture = widget.reminderService.getReminders();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return FutureBuilder<List<Reminder>>(
+      future: _remindersFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        final reminders = snapshot.data ?? [];
+        if (reminders.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.notifications_none, size: 64, color: Colors.grey[400]),
+                const SizedBox(height: 16),
+                Text(
+                  'Нет установленных напоминаний',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: Colors.grey[600],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Откройте расписание и нажмите на событие,\nчтобы установить напоминание',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: Colors.grey[500],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                OutlinedButton.icon(
+                  onPressed: () async {
+                    await widget.reminderService.showTestNotification();
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Тестовое уведомление отправлено'),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.bug_report, size: 18),
+                  label: const Text('Тест уведомления'),
+                ),
+              ],
+            ),
+          );
+        }
+        final sorted = List<Reminder>.from(reminders)
+          ..sort((a, b) => a.notifyAt.compareTo(b.notifyAt));
+        return RefreshIndicator(
+          onRefresh: () async => _reload(),
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () async {
+                      await widget.reminderService.showTestNotification();
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Тестовое уведомление отправлено'),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      }
+                    },
+                    icon: const Icon(Icons.bug_report, size: 16),
+                    label: const Text('Тест уведомления'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.grey[600],
+                      side: BorderSide(color: Colors.grey[300]!),
+                    ),
+                  ),
+                ),
+              ),
+              ...sorted.map((r) {
+                final past = r.notifyAt.isBefore(DateTime.now());
+                return Column(
+                  children: [
+                    ListTile(
+                      leading: Icon(
+                        past ? Icons.notifications_off_outlined : Icons.notifications_active,
+                        color: past ? Colors.grey : theme.colorScheme.primary,
+                      ),
+                      title: Text(
+                        r.activityTitle,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: past ? Colors.grey : null,
+                        ),
+                      ),
+                      subtitle: Text(
+                        '${_formatDate(r.notifyAt)} ${_formatTime(r.notifyAt)} · День ${r.dayIndex} · за ${r.minutesBefore} мин.',
+                        style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                      ),
+                      trailing: IconButton(
+                        icon: Icon(Icons.delete_outline, color: Colors.grey[400]),
+                        onPressed: () async {
+                          await widget.reminderService.removeReminder(r.id);
+                          _reload();
+                        },
+                      ),
+                    ),
+                    if (r != sorted.last) const Divider(height: 1),
+                  ],
+                );
+              }),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  String _formatTime(DateTime dt) {
+    final h = dt.hour.toString().padLeft(2, '0');
+    final m = dt.minute.toString().padLeft(2, '0');
+    return '$h:$m';
+  }
+
+  String _formatDate(DateTime dt) {
+    final d = dt.day.toString().padLeft(2, '0');
+    final m = dt.month.toString().padLeft(2, '0');
+    return '$d.$m';
+  }
+}
+
+class _AboutTab extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.directions_boat, size: 64, color: theme.colorScheme.primary),
+            const SizedBox(height: 16),
+            Text(
+              'Volga Dream',
+              style: theme.textTheme.headlineMedium,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Ваш идеальный круиз по Волге',
+              style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Приложение для отслеживания расписания\nи получения напоминаний о событиях круиза.',
+              style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey[500]),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }
