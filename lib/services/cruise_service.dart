@@ -16,7 +16,7 @@ class CruiseService implements ICruiseService {
       days: [
         DayItinerary(
           dayIndex: 1,
-          dayDate: DateTime(2026, 7, 1),
+          dayDate: DateTime(2026, 6, 23),
           dateLabel: '1 июня 2026',
           title: 'Астрахань — посадка',
           locationName: 'Астрахань',
@@ -45,7 +45,7 @@ class CruiseService implements ICruiseService {
               title: 'Ужин — знакомство',
               description: 'Приветственный ужин с командой теплохода. Представление программы круиза.',
               type: ActivityType.meal,
-              timeRange: '19:00 – 21:00',
+              timeRange: '20:15 – 21:00',
               location: 'Ресторан «Волга», палуба 2',
               dayIndex: 1,
             ),

@@ -248,6 +248,22 @@ class _NotificationsTabState extends State<_NotificationsTab> {
                   ),
                   textAlign: TextAlign.center,
                 ),
+                const SizedBox(height: 24),
+                OutlinedButton.icon(
+                  onPressed: () async {
+                    await widget.reminderService.showTestNotification();
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Тестовое уведомление отправлено'),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.bug_report, size: 18),
+                  label: const Text('Тест уведомления'),
+                ),
               ],
             ),
           );
@@ -256,38 +272,67 @@ class _NotificationsTabState extends State<_NotificationsTab> {
           ..sort((a, b) => a.notifyAt.compareTo(b.notifyAt));
         return RefreshIndicator(
           onRefresh: () async => _reload(),
-          child: ListView.separated(
+          child: ListView(
             padding: const EdgeInsets.all(16),
-            itemCount: sorted.length,
-            separatorBuilder: (_, _) => const Divider(height: 1),
-            itemBuilder: (context, index) {
-              final r = sorted[index];
-              final past = r.notifyAt.isBefore(DateTime.now());
-              return ListTile(
-                leading: Icon(
-                  past ? Icons.notifications_off_outlined : Icons.notifications_active,
-                  color: past ? Colors.grey : theme.colorScheme.primary,
-                ),
-                title: Text(
-                  r.activityTitle,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: past ? Colors.grey : null,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () async {
+                      await widget.reminderService.showTestNotification();
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Тестовое уведомление отправлено'),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      }
+                    },
+                    icon: const Icon(Icons.bug_report, size: 16),
+                    label: const Text('Тест уведомления'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.grey[600],
+                      side: BorderSide(color: Colors.grey[300]!),
+                    ),
                   ),
                 ),
-                subtitle: Text(
-                  'День ${r.dayIndex} · ${_formatTime(r.activityStart)} · за ${r.minutesBefore} мин.',
-                  style: TextStyle(fontSize: 13, color: Colors.grey[600]),
-                ),
-                trailing: IconButton(
-                  icon: Icon(Icons.delete_outline, color: Colors.grey[400]),
-                  onPressed: () async {
-                    await widget.reminderService.removeReminder(r.id);
-                    _reload();
-                  },
-                ),
-              );
-            },
+              ),
+              ...sorted.map((r) {
+                final past = r.notifyAt.isBefore(DateTime.now());
+                return Column(
+                  children: [
+                    ListTile(
+                      leading: Icon(
+                        past ? Icons.notifications_off_outlined : Icons.notifications_active,
+                        color: past ? Colors.grey : theme.colorScheme.primary,
+                      ),
+                      title: Text(
+                        r.activityTitle,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: past ? Colors.grey : null,
+                        ),
+                      ),
+                      subtitle: Text(
+                        '${_formatDate(r.notifyAt)} ${_formatTime(r.notifyAt)} · День ${r.dayIndex} · за ${r.minutesBefore} мин.',
+                        style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                      ),
+                      trailing: IconButton(
+                        icon: Icon(Icons.delete_outline, color: Colors.grey[400]),
+                        onPressed: () async {
+                          await widget.reminderService.removeReminder(r.id);
+                          _reload();
+                        },
+                      ),
+                    ),
+                    if (r != sorted.last) const Divider(height: 1),
+                  ],
+                );
+              }),
+            ],
           ),
         );
       },
@@ -298,6 +343,12 @@ class _NotificationsTabState extends State<_NotificationsTab> {
     final h = dt.hour.toString().padLeft(2, '0');
     final m = dt.minute.toString().padLeft(2, '0');
     return '$h:$m';
+  }
+
+  String _formatDate(DateTime dt) {
+    final d = dt.day.toString().padLeft(2, '0');
+    final m = dt.month.toString().padLeft(2, '0');
+    return '$d.$m';
   }
 }
 
